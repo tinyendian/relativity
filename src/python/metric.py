@@ -8,11 +8,19 @@ class metric:
   Base class for defining a metric as a symmetric bilinear form
   """
   def __init__(self):
-    # This does not currently take symmetry of metric tensor into account
+    # This does not currently take symmetries into account
+    self.name = None
     self.matrix = np.zeros((4,4), dtype = np.float64)
+    self.christoffel = np.zeros((4,4,4), dtype = np.float64)
+
+  def getName(self):
+    return self.name
 
   def getMatrix(self):
     return self.matrix
+
+  def getChristoffel(self):
+    return self.christoffel
 
   def scalarProduct(self, v, w):
     """
@@ -29,9 +37,12 @@ class minkowski(metric):
   Defines the Minkowski metric
   g_00 = 1
   g_11 = g_22 = g_33 = -1
+  
+  All Christoffel symbols vanish
   """
   def __init__(self):
     super(minkowski, self).__init__()
+    self.name = 'Minkowski'
     self.matrix = np.diagflat(np.array([1,-1,-1,-1], dtype = np.float64))
 
 # -----------------------------------------------------------------------
@@ -51,6 +62,7 @@ class schwarzschild(metric):
     assert(theta >= 0 and theta <= np.pi), "Polar angle must be in range 0..pi"
 
     super(schwarzschild, self).__init__()
+    self.name = 'Schwarzschild'
     self.rSchwarzschild = rSchwarzschild
 
     self.matrix[0,0] = 1-self.rSchwarzschild/r
