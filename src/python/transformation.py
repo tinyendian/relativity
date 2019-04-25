@@ -69,7 +69,9 @@ class lorentzRotation(transformation):
   vectors
   """
   def __init__(self, axis, angle):
-    assert (axis >= 1 and axis <= 3), "Axis must be in range 1..3"
+    assert (isinstance(axis, int)), "Axis parameter must be an integer number"
+    assert (axis > 0 and axis < 4), "Axis must be in range 1..3"
+    assert (isinstance(angle, (int, float))), "Angle parameter must be a number"
     self.axis = axis
     self.angle = angle
 
@@ -103,7 +105,9 @@ class lorentzBoost(transformation):
   vectors
   """
   def __init__(self, axis, beta):
-    assert (axis >= 1 and axis <= 3), "Axis must be in range 1..3"
+    assert (isinstance(axis, int)), "Axis parameter must be an integer number"
+    assert (axis > 0 and axis < 4), "Axis must be in range 1..3"
+    assert (isinstance(beta, (int, float))), "Angle parameter must be a number"
     assert (np.abs(beta) < 1), "Beta must be > -1 and < 1"
     self.axis = axis
     self.beta = beta

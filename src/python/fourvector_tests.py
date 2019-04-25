@@ -6,6 +6,25 @@ def test_fourvector():
 
   metric = mt.minkowski()
 
+  # Check operators
+  v1 = fv.fourvector([1,0,0,0], metric)
+  v2 = fv.fourvector([0,1,0,0], metric)
+  assert(np.allclose((v1+v2).vector, [1,1,0,0])), "Unexpected result"
+  assert(np.allclose((v1-v2).vector, [1,-1,0,0])), "Unexpected result"
+  assert(np.allclose((v2*2).vector, [0,2,0,0])), "Unexpected result"
+  assert(np.allclose((v2*2.6).vector, [0,2.6,0,0])), "Unexpected result"
+  assert(np.allclose((-3*v2).vector, [0,-3,0,0])), "Unexpected result"
+  assert(np.allclose((-3.4*v2).vector, [0,-3.4,0,0])), "Unexpected result"
+  assert(np.allclose((v2/2).vector, [0,1/2,0,0])), "Unexpected result"
+  assert(np.allclose((v2/2.9).vector, [0,1/2.9,0,0])), "Unexpected result"
+  assert(v1[0] == 1), "Unexpected result"
+  assert(v1 == v1), "Unexpected result"
+  assert(not v1 == v2), "Unexpected result"
+  assert(not v1 == 3), "Unexpected result"
+  assert(not v1 == fv.fourvector([1,0,0,0], mt.metric())), "Unexpected result"
+  assert(not v1 != v1), "Unexpected result"
+  assert(v1 != v2), "Unexpected result"
+
   # Check inner products and vector types
   particle = fv.fourvector([1,0,0,0], metric)
   assert (np.isclose(particle.innerProduct(), 1)), "Inner product not time-like"

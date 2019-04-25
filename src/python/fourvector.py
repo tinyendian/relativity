@@ -17,18 +17,65 @@ class fourvector:
     self.vector = np.array(data)
     self.metric = metric
 
-  def innerProduct(self, second = None):
+  #
+  # Operator definitions
+  #
+
+  # Only implement essential operators and derive the others from these
+  def __add__(self, other):
+    assert(isinstance(other, fourvector)), "Argument must be fourvector type"
+    assert(self.metric == other.metric), "Four-vectors must have same metric"
+    return fourvector(self.vector+other.vector, self.metric)
+
+  def __mul__(self, other):
+    assert(isinstance(other, (int,float))), "Argument must be int or float type"
+    return fourvector(self.vector*other, self.metric)
+
+  def __eq__(self, other):
+    """
+    Requires that operand is a fourvector with identical components and
+	numerically near-identical metric
+    """
+    result = isinstance(other, fourvector)
+    result = result and np.array_equal(self.vector, other.vector)
+    result = result and self.metric == other.metric
+    return result
+
+  def __sub__(self, other):
+    return self.__add__(other*(-1.))
+
+  def __rmul__(self, other):
+    return self.__mul__(other)
+
+  def __truediv__(self, other):
+    return self.__mul__(1./other)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
+  def __getitem__(self, index):
+    return self.vector[index]
+
+  def __str__(self):
+    return self.vector.__str__() + " Metric: " + self.metric.name
+
+  #
+  # Methods
+  #
+
+  def innerProduct(self, other = None):
     """
     Return inner product of vector with itself,
     g(v,v)
     or with another vector,
     g(v,w)
     """
-    if second is None:
+    if other is None:
       return self.metric.scalarProduct(self.vector, self.vector)
     else:
-      assert(np.allclose(self.metric.getMatrix(), second.metric.getMatrix())), "Four-vectors must have same metric"
-      return self.metric.scalarProduct(self.vector, second.vector)
+      assert(isinstance(other, fourvector)), "Argument must be fourvector type"
+      assert(self.metric == other.metric), "Four-vectors must have same metric"
+      return self.metric.scalarProduct(self.vector, other.vector)
 
   def norm(self):
     return np.sqrt(np.abs(self.innerProduct()))
@@ -43,23 +90,29 @@ class fourvector:
     return self.innerProduct() < -self.tolerance
 
   def lorentzRotate(self, axis, angle):
+    """
+    Spatial rotation around given axis with given angle
+    """
     assert (self.metric.getName() == 'Minkowski'), "Lorentz transformations require Minkowski metric"
     rot = tf.lorentzRotation(axis, angle)
     self.vector = rot.transformContraVector(self.vector)
-    self.metric.matrix = rot.transformCoMatrix(self.metric.matrix)
 
   def lorentzBoost(self, axis, beta):
+    """
+    Boost into frame that moves along given axis at speed beta = v/c
+    """
     assert (self.metric.getName() == 'Minkowski'), "Lorentz transformations require Minkowski metric"
     boost = tf.lorentzBoost(axis, beta)
     self.vector = boost.transformContraVector(self.vector)
-    self.metric.matrix = boost.transformCoMatrix(self.metric.matrix)
 
 class observer(fourvector):
   """
-  Specialisation of the fourvector class to define observers.
-  Observers are always time-like and normalised,
+  Specialisation of the fourvector class to define observers as normalised
+  four-velocities. Observers are always time-like with
   
   g(x,x) = 1
+  
+  in natural units (c=1).
   """
 
   def __init__(self, data, metric):
@@ -67,7 +120,7 @@ class observer(fourvector):
     assert (self.isTimeLike()), "Observers must be time-like"
     assert (np.isclose(self.norm(), 1)), "Observers must be time-like"
 
-  def relativeVelocity(self, x):
+  def relativeVelocity(self, other):
     """
 	Return space-like four-vector with relative velocity
 	of this observer y as seen by another observer x,
@@ -78,16 +131,17 @@ class observer(fourvector):
 	
 	g(v,x) = 0
 	"""
-    assert(np.allclose(self.metric.getMatrix(), x.metric.getMatrix())), "Four-vectors must have same metric"
-    return fourvector(self.vector/self.innerProduct(x) - x.vector, self.metric)
+    assert(self.metric == other.metric), "Four-vectors must have same metric"
+    return self/self.innerProduct(other) - other
 
-  def speed(self, x):
+  def speed(self, other):
     """
 	Return speed (in units of speed of light) of this observer
 	as seen by another observer x
 	"""
-    assert(np.allclose(self.metric.getMatrix(), x.metric.getMatrix())), "Four-vectors must have same metric"
-    return np.sqrt(-self.relativeVelocity(x).innerProduct())
+    assert(isinstance(other, fourvector)), "Argument must be fourvector type"
+    assert(self.metric == other.metric), "Four-vectors must have same metric"
+    return np.sqrt(-self.relativeVelocity(other).innerProduct())
 
 class particle(observer):
   """
@@ -99,20 +153,21 @@ class particle(observer):
     assert (restmass > 0), "Mass must be positive"
     self.restmass = restmass
 
-  def energy(self, x):
-    assert(np.allclose(self.metric.getMatrix(), x.metric.getMatrix())), "Four-vectors must have same metric"
-    return self.restmass*self.innerProduct(x)
+  def energy(self, other):
+    assert(isinstance(other, fourvector)), "Argument must be fourvector type"
+    assert(self.metric == other.metric), "Four-vectors must have same metric"
+    return self.restmass*self.innerProduct(other)
 
 class photon(fourvector):
   """
   Specialisation of the fourvector class to define photons
-  with given frequency. Photons are always light-like
+  with given energy. Photons are always light-like
   (obviously...),
   
   g(x,x) = 0
   """
 
-  def __init__(self, data, metric, frequency):
+  def __init__(self, data, metric, energy):
     super(photon, self).__init__(data, metric)
     assert (self.isLightLike()), "Photons must be light-like"
-    self.frequency = frequency
+    self.energy = energy

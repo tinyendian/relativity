@@ -6,6 +6,8 @@ def test_metric():
   v1 = np.array([1,2,3,4], dtype = np.float64)
   assert (metric.scalarProduct(v1, v1) == 0), "Expected zero result"
 
+# FIXME - IMPLEMENT OPERATOR TESTS
+
 # -----------------------------------------------------------------------
 
 def test_minkowski():
