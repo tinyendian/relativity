@@ -92,6 +92,10 @@ def test_geodesic():
     assert (np.isclose(vel[2], 0.0)), "Expected no polar angle motion"
     assert (np.isclose(vel[3], vphi0)), "Expected no orbital acceleration"
     
-    # The resting observers must all measure the same orbital speed g(v,v)
-    speed = r0*vphi0/np.sqrt(1+r0*r0*vphi0*vphi0)
-    assert (np.isclose(vel.speed(obs), speed)), "Unexpected orbital speed"
+    # The resting observers must all measure the same orbital speed
+    orbSpeed = r0*vphi0/np.sqrt(1+r0*r0*vphi0*vphi0)
+    assert (np.isclose(vel.speed(obs), orbSpeed)), "Unexpected orbital speed"
+
+    # The resting observers must all measure the same orbital energy
+    orbEnergy = mass*np.sqrt(1+r0*r0*vphi0*vphi0)
+    assert (np.isclose(vel.energy(obs), orbEnergy)), "Unexpeced orbital energy"
