@@ -23,6 +23,10 @@ def test_minkowski():
   assert (np.array_equal(matrix-np.diagflat([1,-1,-1,-1]),
           np.zeros((4,4), dtype = matrix.dtype))), "Non-zero off-diagonal elements"
 
+  metric2 = mt.minkowski()
+  metric2.updateCoords([1,2,3,4])
+  assert (metric2 == metric), "updateCoords method should not change anything"
+
 # -----------------------------------------------------------------------
 
 def test_schwarzschild():
@@ -38,10 +42,9 @@ def test_schwarzschild():
   assert (np.array_equal(matrix-np.diagflat(np.diag(matrix)),
           np.zeros((4,4), dtype = matrix.dtype))), "Non-zero off-diagonal elements"
 
-  rs = 6.54321
   r = 1.0e30
   theta = 1.2345
-  metric = mt.schwarzschild(rs, r, theta)
+  metric.updateCoords([0,r,theta,0])
   matrix = metric.getMatrix()
   assert (np.isclose(matrix[0,0], 1)), "Time component does not converge to Minkowski"
   assert (np.isclose(matrix[1,1], -1)), "Radius component does not converge to Minkowski"

@@ -1,5 +1,6 @@
 import numpy as np
 import transformation as tf
+import metric as mt
 import copy
 
 class fourvector:
@@ -22,6 +23,7 @@ class fourvector:
       self.vector = np.array(data, dtype = np.float64)
 
     # Get an independent copy of the metric to enable independent transformations
+    assert (isinstance(metric, mt.metric)), "Argument must be metric type"
     self.metric = copy.deepcopy(metric)
 
   #
@@ -177,4 +179,5 @@ class photon(fourvector):
   def __init__(self, data, metric, energy):
     super(photon, self).__init__(data, metric)
     assert (self.isLightLike()), "Photons must be light-like"
+    assert(isinstance(energy, (int,float))), "Argument must be int or float type"
     self.energy = energy

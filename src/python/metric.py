@@ -40,7 +40,7 @@ class metric:
   def getChristoffel(self):
     return self.christoffel
 
-  def updateCoords(self, b, c, d):
+  def updateCoords(self, coord):
     pass
 
   def scalarProduct(self, v, w):
@@ -87,9 +87,16 @@ class schwarzschild(metric):
     self.rSchwarzschild = rSchwarzschild
     self.r = r
     self.theta = theta
-    self.updateCoords(0, r, theta, 0)
+    self.updateCoords([0, r, theta, 0])
 
-  def updateCoords(self, t, r, theta, phi):
+  def updateCoords(self, coord):
+    if isinstance(coord, np.ndarray):
+      assert (coord.shape == (4,)), "Coordinate tuple must have 4 components"
+    else:
+      assert (len(coord) == 4), "Coordinate tuple must have 4 components"
+
+    r = coord[1]
+    theta = coord[2]
 
     self.matrix[0,0] = 1-self.rSchwarzschild/r
     self.matrix[1,1] = -1/self.matrix[0,0]
