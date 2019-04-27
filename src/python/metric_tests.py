@@ -6,7 +6,13 @@ def test_metric():
   v1 = np.array([1,2,3,4], dtype = np.float64)
   assert (metric.scalarProduct(v1, v1) == 0), "Expected zero result"
 
-# FIXME - IMPLEMENT OPERATOR TESTS
+  # Test operators
+  a = mt.metric()
+  b = mt.minkowski()
+  assert (b == b), "Expected equality"
+  assert (not a == b), "Did not expect equality"
+  assert (a != b), "Expected inequality"
+  assert (not b != b), "Did not expect inequality"
 
 # -----------------------------------------------------------------------
 

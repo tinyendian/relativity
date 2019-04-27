@@ -9,7 +9,7 @@ class metric:
   """
   def __init__(self):
     # This does not currently take symmetries into account
-    self.name = None
+    self.name = "Null"
     self.matrix = np.zeros((4,4), dtype = np.float64)
     self.christoffel = np.zeros((4,4,4), dtype = np.float64)
 
@@ -25,6 +25,9 @@ class metric:
     result = result and np.allclose(self.christoffel, other.christoffel)
     return result
 
+  def __str__(self):
+    return self.matrix.__str__() + "\nName: " + self.name
+
   def __ne__(self, other):
     return not self.__eq__(other)
 
@@ -36,6 +39,9 @@ class metric:
 
   def getChristoffel(self):
     return self.christoffel
+
+  def updateCoords(self, b, c, d):
+    pass
 
   def scalarProduct(self, v, w):
     """
@@ -79,6 +85,11 @@ class schwarzschild(metric):
     super(schwarzschild, self).__init__()
     self.name = 'Schwarzschild'
     self.rSchwarzschild = rSchwarzschild
+    self.r = r
+    self.theta = theta
+    self.updateCoords(0, r, theta, 0)
+
+  def updateCoords(self, t, r, theta, phi):
 
     self.matrix[0,0] = 1-self.rSchwarzschild/r
     self.matrix[1,1] = -1/self.matrix[0,0]

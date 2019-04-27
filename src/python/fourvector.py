@@ -1,5 +1,6 @@
 import numpy as np
 import transformation as tf
+import copy
 
 class fourvector:
   """
@@ -13,9 +14,15 @@ class fourvector:
   tolerance = 1.0e-10
 
   def __init__(self, data, metric):
-    assert (len(data) == 4), "Expect input vector with 4 components"
-    self.vector = np.array(data)
-    self.metric = metric
+    if isinstance(data, np.ndarray):
+      assert (data.shape == (4,)), "Input vector must have 4 components"
+      self.vector = data.astype(np.float64)
+    else:
+      assert (len(data) == 4), "Input vector must have 4 components"
+      self.vector = np.array(data, dtype = np.float64)
+
+    # Get an independent copy of the metric to enable independent transformations
+    self.metric = copy.deepcopy(metric)
 
   #
   # Operator definitions
