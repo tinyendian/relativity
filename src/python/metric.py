@@ -79,6 +79,7 @@ class schwarzschild(metric):
     Set Schwarzschild radius in arbitrary units
     """
     assert(rSchwarzschild >= 0), "Schwarzschild radius cannot be negative"
+    assert(r > 0), "Radius must be > 0"
     assert(r != rSchwarzschild), "Metric diverges at Schwarzschild radius"
     assert(theta >= 0 and theta <= np.pi), "Polar angle must be in range 0..pi"
 
