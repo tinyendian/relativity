@@ -37,6 +37,7 @@ class worldline:
     self.curveparam = []
     self.coords = []
     self.velocities = []
+    self.integralCurve = None
 
   def geodesic(self, properTime, nSteps = None):
     """
@@ -71,13 +72,14 @@ class worldline:
     y0 = np.concatenate((self.coord0, self.velocity0.vector))
 
     result = spi.solve_ivp(lambda t,y: geodesicRHS(t,y,self.velocity0.metric), [0, properTime],
-                           y0, method = 'RK45', t_eval = times)
+                           y0, method = 'RK45', t_eval = times, dense_output = True)
 
     # Let user know if things went wrong, but keep output nonetheless
     if not result["success"]:
       print(result)
 
-    # Store integration results as lists - proper time, coordinate tuples, velocity vectors
+    # Store integration results - OdeSolution object, proper time, coords, velocities
+    self.integralCurve = result["sol"]
     for i in range(len(result["t"])):
       self.curveparam.append(result["t"][i])
       coord = result["y"][0:4,i]
@@ -87,3 +89,48 @@ class worldline:
       self.velocities[-1].vector = result["y"][4:8,i]
       # Each velocity vector has its own copy of the metric, evaluated at coord
       self.velocities[-1].metric.updateCoords(coord)
+
+  def acceleration(self, properTime):
+    """
+    Computes acceleration along a worldline using the covariant derivative,
+    
+    D_v(v)^k = dv^k/dtau + v^i*v^j*gamma^k_ij
+    
+    where gamma are the Christoffel symbols.
+    """
+    assert (properTime >= 0), "Proper time must be >= 0"
+    assert (self.integralCurve is not None), "Worldline must have at least two points"
+
+    # Get proper time at the end of worldline
+    totalTime = self.curveparam[-1]
+    assert (properTime <= totalTime), "Proper time larger than end time of worldline"
+
+    # Compute directional derivative along curve around given proper time using a
+    # +- 5% stencil
+    dtau = 0.05 * totalTime
+    # Use two-sided stencil if possible
+    if properTime >= dtau and properTime <= (totalTime-dtau):
+      dvdtau = (self.integralCurve(properTime+dtau)[4:8]-self.integralCurve(properTime-dtau)[4:8])/(2*dtau)
+    elif properTime > (totalTime-dtau):
+      dvdtau = (self.integralCurve(properTime)[4:8]-self.integralCurve(properTime-dtau)[4:8])/dtau
+    elif properTime < dtau:
+      dvdtau = (self.integralCurve(properTime+dtau)[4:8]-self.integralCurve(properTime)[4:8])/dtau
+    else:
+      print ("ERROR: This branch should never be reached")
+      return None
+
+    # Get coordinates and velocities at given proper time
+    coord = self.integralCurve(properTime)[0:4]
+    vel = self.integralCurve(properTime)[4:8]
+
+    # Create new four-vector with the same metric as the worldline
+    result = fv.fourvector([0,0,0,0], self.velocity0.metric)
+    result.metric.updateCoords(coord)
+
+    # Compute basis correction for directional derivative using Christoffel symbols
+    corr = np.einsum('i,j,kij', vel, vel, result.metric.getChristoffel())
+
+    # Combine directional derivative and basis correction to obtain covariant derivative
+    result.vector = dvdtau + corr
+
+    return result

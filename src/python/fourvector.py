@@ -140,7 +140,7 @@ class observer(fourvector):
 	
 	g(v,x) = 0
 	"""
-    assert(self.metric == other.metric), "Four-vectors must have same metric"
+    assert (self.metric == other.metric), "Four-vectors must have same metric"
     return self/self.innerProduct(other) - other
 
   def speed(self, other):
@@ -148,8 +148,8 @@ class observer(fourvector):
 	Return speed (in units of speed of light) of this observer
 	as seen by another observer x
 	"""
-    assert(isinstance(other, fourvector)), "Argument must be fourvector type"
-    assert(self.metric == other.metric), "Four-vectors must have same metric"
+    assert (isinstance(other, fourvector)), "Argument must be fourvector type"
+    assert (self.metric == other.metric), "Four-vectors must have same metric"
     return np.sqrt(-self.relativeVelocity(other).innerProduct())
 
 class particle(observer):
@@ -163,8 +163,8 @@ class particle(observer):
     self.restmass = restmass
 
   def energy(self, other):
-    assert(isinstance(other, fourvector)), "Argument must be fourvector type"
-    assert(self.metric == other.metric), "Four-vectors must have same metric"
+    assert (isinstance(other, fourvector)), "Argument must be fourvector type"
+    assert (self.metric == other.metric), "Four-vectors must have same metric"
     return self.restmass*self.innerProduct(other)
 
 class photon(fourvector):
@@ -179,5 +179,5 @@ class photon(fourvector):
   def __init__(self, data, metric, energy):
     super(photon, self).__init__(data, metric)
     assert (self.isLightLike()), "Photons must be light-like"
-    assert(isinstance(energy, (int,float))), "Argument must be int or float type"
+    assert (isinstance(energy, (int,float))), "Argument must be int or float type"
     self.energy = energy

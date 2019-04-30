@@ -14,8 +14,10 @@ def test_geodesic():
   path = wl.worldline([0,0,0,0], vel0)
   path.geodesic(10)
   for i in range(len(path.curveparam)):
-    assert (np.allclose(path.coords[i], (path.curveparam[i]*vel0).vector)), "Only time coordinate should change"
+    tau = path.curveparam[i]
+    assert (np.allclose(path.coords[i], (tau*vel0).vector)), "Only time coordinate should change"
     assert (np.allclose(path.velocities[i].vector, vel0.vector)), "Four-velocity should be constant"
+    assert (np.allclose(path.acceleration(tau).vector, np.zeros(4))), "Four-acceleration should vanish"
 
   # Particle in flat Minkowski spacetime - time and space coordinates should change
   # Mass is irrelevant here
@@ -36,6 +38,7 @@ def test_geodesic():
     assert (np.allclose(path.velocities[i].vector, vel0.vector)), "Four-velocity should be constant"
     # Measure particle speed in observer's frame at every location
     assert (np.isclose(path.velocities[i].speed(obs), beta)), "Resting observer should measure same speed"
+    assert (np.allclose(path.acceleration(tau).vector, np.zeros(4))), "Four-acceleration should vanish"
 
   # Photon in flat Minkowski spacetime - time and space coordinates should change
   # Energy is irrelevant here
@@ -46,6 +49,7 @@ def test_geodesic():
   for i in range(len(path.curveparam)):
     assert (np.allclose(path.coords[i], (path.curveparam[i]*vel0).vector)), "Time and one space coordinate should change"
     assert (np.allclose(path.velocities[i].vector, vel0.vector)), "Light should not accelerate"
+    assert (np.allclose(path.acceleration(tau).vector, np.zeros(4))), "Four-acceleration should vanish"
 
   #
   # Curved (Schwarzschild) spacetime
@@ -91,11 +95,13 @@ def test_geodesic():
     assert (np.isclose(vel[1], 0.0)), "Expected no radial motion"
     assert (np.isclose(vel[2], 0.0)), "Expected no polar angle motion"
     assert (np.isclose(vel[3], vphi0)), "Expected no orbital acceleration"
-    
+
+    assert (np.allclose(path.acceleration(tau).vector, np.zeros(4))), "Four-acceleration should vanish"
+
     # The resting observers must all measure the same orbital speed
     orbSpeed = r0*vphi0/np.sqrt(1+r0*r0*vphi0*vphi0)
     assert (np.isclose(vel.speed(obs), orbSpeed)), "Unexpected orbital speed"
 
     # The resting observers must all measure the same orbital energy
     orbEnergy = mass*np.sqrt(1+r0*r0*vphi0*vphi0)
-    assert (np.isclose(vel.energy(obs), orbEnergy)), "Unexpeced orbital energy"
+    assert (np.isclose(vel.energy(obs), orbEnergy)), "Unexpected orbital energy"
